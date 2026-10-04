@@ -1,80 +1,100 @@
-# Detection and Prevention of Vehicle Insurance Claim Fraud
+<div align="center">
 
-## Project Overview
+# 🚗 Vehicle Insurance Claim Fraud Detection
 
-This project aims to tackle the pervasive issue of vehicle insurance fraud, which causes substantial financial losses for insurance companies and erodes consumer trust. Fraudulent claims vary from staged accidents to exaggerated injuries, complicating the claims process and increasing costs. By leveraging historical vehicle and policy data, our objective is to develop a robust predictive model to accurately detect and prevent fraudulent claims. The implementation of this model is intended to help insurance companies minimize financial losses, enhance the efficiency of claims processing, and maintain fair premium pricing for customers.
+**Benchmarking eight machine-learning models to flag fraudulent auto-insurance claims from policy and vehicle data.**
 
-## Dataset
+![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white)
+![Jupyter](https://img.shields.io/badge/Jupyter-F37626?logo=jupyter&logoColor=white)
+![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?logo=scikitlearn&logoColor=white)
+![XGBoost](https://img.shields.io/badge/XGBoost-189FDD)
+![CatBoost](https://img.shields.io/badge/CatBoost-FFCC00)
+![imbalanced-learn](https://img.shields.io/badge/imbalanced--learn-SMOTE-6A5ACD)
+![License](https://img.shields.io/badge/License-MIT-green)
+![Course](https://img.shields.io/badge/USD%20MS--AAI-AAI--510%20Final%20Project-002868)
 
-### Name: Vehicle Claim Fraud Detection
+</div>
 
-- **Source**: Kaggle
-- **Size**: 15,420 records
-- **Variables**: 33 (both categorical and numerical)
-- **Key Features**:
-  - Month of the accident
-  - Day of the week
-  - Make of the vehicle
-  - Accident area
-  - Age of the policyholder
-  - Various policy details
-  - Indicator of whether the claim was fraudulent
+## Overview
+Fraudulent claims (staged accidents, inflated damages) cost insurers heavily and push premiums up for honest customers. The question we set out to answer: **can historical vehicle and policy data reliably flag claims that need investigation?** Only ~6% of claims in the data are fraudulent, so the work focuses on handling class imbalance and on **recall for the fraud class**, since a missed fraud costs more than an extra review.
 
-The dataset offers a robust sample size for training and evaluating the predictive model and includes indicators for fraudulent claims, making it suitable for building a classification model.
+## 📊 Key Results
+Accuracy on the held-out test split (5,799 claims), taken from the outputs of `Final Project SectionA-Team 1.ipynb`, after hyperparameter tuning:
 
-## Project Structure
+| Model (tuned) | Accuracy | Fraud recall | Fraud F1 |
+|---|---|---|---|
+| **Random Forest** | **0.858** | 0.95 | 0.87 |
+| **XGBoost** (Bayesian opt.) | **0.858** | 0.95 | 0.87 |
+| **CatBoost** | 0.857 | 0.95 | 0.87 |
+| Gradient Boosting | 0.856 | 0.94 | 0.87 |
+| Decision Tree | 0.855 | 0.94 | 0.87 |
+| K-Nearest Neighbors | 0.842 | 0.92 | 0.85 |
+| Logistic Regression | 0.781 | 0.86 | 0.80 |
+| Isolation Forest | 0.503 | 0.07 | 0.13 |
 
-- <b>Data Preparation:</b> Handle missing values, convert data types, encode categorical variables, and scale numerical features.
-- <b>Feature Engineering:</b> Select relevant features, encode categorical variables using one-hot encoding, and apply SMOTE to handle class imbalance.
-- <b>Model Training and Evaluation:</b> Train and evaluate models (Isolation Forest, Gradient Boosting, Decision Tree, XGBoost, Random Forest, K-Nearest Neighbor, Logistic Regression, and CatBoost) with hyperparameter tuning.
-- <b>Model Comparison:</b> Compare models based on performance metrics, highlighting CatBoost as the top performer.
+- Tree ensembles were the strongest group: **~95% of fraudulent claims caught** at 0.80 fraud precision.
+- Unsupervised anomaly detection (Isolation Forest) failed on this problem, which supports a supervised approach.
+- Chi-square tests and EDA showed **fault, policy type, vehicle category, base policy, and vehicle price** carry the strongest fraud signal.
 
-## Installation and Usage
+> **Note:** SMOTE was applied before the train/test split, so the test set is class-balanced and contains synthetic samples. Scores are best read as a *relative* model comparison. Re-evaluating with SMOTE applied only to training folds is the next step.
 
-### Prerequisites
+## 🔧 Approach
+```mermaid
+flowchart LR
+  A[fraud_oracle.csv<br/>15,420 claims · 33 vars] --> B[EDA<br/>chi-square · t-test · correlations]
+  B --> C[Feature selection<br/>10 features + domain knowledge]
+  C --> D[One-hot encode<br/>+ scale Deductible]
+  D --> E[SMOTE<br/>class balancing]
+  E --> F[80/20 split]
+  F --> G[8 models<br/>baseline → tuned]
+  G --> H[GridSearch / RandomizedSearch /<br/>Bayesian optimization]
+  H --> I[Compare accuracy,<br/>precision, recall, F1]
+```
 
-- Python 3.x
-- Required libraries:
-  - pandas
-  - numpy
-  - scikit-learn
-  - xgboost
-  - matplotlib
-  - seaborn
-  - scikit-optimize (for Bayesian Optimization)
-  - Jupyter Notebook
+## 🗂️ Dataset
+**Vehicle Claim Fraud Detection** ([Kaggle](https://www.kaggle.com/datasets/shivamb/vehicle-claim-fraud-detection)): 15,420 claims, 33 categorical and numerical variables (accident timing, vehicle make/price/age, policy type, deductible, driver rating, past claims, and more). Target: `FraudFound_P`. A copy is included as `fraud_oracle.csv`.
 
-### Instructions
+## 🧰 Tech Stack
+Python · pandas · NumPy · scikit-learn · XGBoost · CatBoost · imbalanced-learn (SMOTE) · scikit-optimize · SciPy · statsmodels · Matplotlib · Seaborn
 
-1. Clone the repository:
-    ```bash
-    git clone https://github.com/oxayavongsa/aai-510-ml-group-1
-    cd aai-510-ml-group-1
-    ```
+## 📁 Repository Structure
+```
+ml-vehicle-fraud-detection/
+├── Final Project SectionA-Team 1.ipynb   # final notebook (EDA → 8 models → comparison)
+├── Final Project SectionA-Team 1.pdf     # notebook export
+├── Final project SectionA-Team 1.pptx    # presentation deck
+├── added-eda.ipynb                       # EDA iterations
+├── revised-eda.ipynb
+├── revised_eda_Rev2.ipynb
+├── main.ipynb                            # early data-loading scratch notebook
+├── fraud_oracle.csv                      # dataset
+├── project status form.pdf
+└── LICENSE
+```
 
-2. Install the required packages:
-    ```bash
-    pip install -r requirements.txt
-    ```
+## ▶️ How to Run
+```bash
+git clone https://github.com/oxayavongsa/ml-vehicle-fraud-detection.git
+cd ml-vehicle-fraud-detection
+pip install pandas numpy scipy statsmodels scikit-learn imbalanced-learn xgboost catboost scikit-optimize matplotlib seaborn notebook
+jupyter notebook "Final Project SectionA-Team 1.ipynb"
+```
+The notebook reads `fraud_oracle.csv` from the repo root, so no download is needed.
 
-3. Open the Jupyter Notebook for Exploratory Data Analysis (EDA):
-    ```bash
-    jupyter notebook Final Project SectionA-Team 1.ipynb
-    ```
+## 🎥 Presentation
+[Project video on YouTube](https://youtu.be/TztlKFz5VXU?si=MeweLXnsnQG7GRCP)
 
-4. Follow the notebook steps to perform data cleaning, feature selection, and model training.
+## 👥 Team
+- **Outhai Xayavongsa (Thai)**, Team Leader
+- **Aaron Ramirez**, Technical Lead
+- **Muhammad Haris**
 
-## Team Members
+Course: AAI-510 Machine Learning, University of San Diego (M.S. Applied Artificial Intelligence)
 
-- **Team Leader/Representative**: Outhai Xayavongsa (Thai)
-- **Technical Lead**: Aaron Ramirez
-- **Members**:
-  - Aaron Ramirez
-  - Muhammad Haris
-  - Outhai Xayavongsa (Thai)
+## 📄 License
+MIT. See [LICENSE](LICENSE).
 
-## YouTube: <a href="https://youtu.be/TztlKFz5VXU?si=MeweLXnsnQG7GRCP" target="_blank">Related Video</a>
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+---
+<div align="center">
+Built by <a href="https://github.com/oxayavongsa">Outhai (Thai) Xayavongsa</a> · <a href="https://oxayavongsa.github.io/ai-automation-portfolio/">Portfolio</a>
+</div>
